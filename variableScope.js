@@ -1,187 +1,171 @@
-function defFoo() {
-    foo = "globally scope var";
-}
-
-function defFoo_var() {
-    var foo = "foo!";
-}
-
-function sayFoo() {
-    console.log(foo);
-
-}
-defFoo();
 /*
-    *foo is available to defFoo because it is scoped globally.
-    *Caution: Globals may be overwritten by globals with the same name
-    *Global scope variables take longer to finda
+Variable Scope in Javascript
 */
-//sayFoo();
-//////////////
 
-//Hoisting
 
-function saySomething() {
-    var sayMore;
+
+/*
+
+Javascript has two basic scopes for variables:
+    * Global and Function Scope
+*/
+
+//Example of a globally scope variable:
+g = 'global variable!';
+
+function setGlobalInAFunction() {
+    g_2 = 'global variable!'; //attached to the global scope
+}
+
+function callGlobal() {
+    console.log(g);
+}
+
+function callGlobalInFunction() {
+    console.log(g_2);
+}
+
+//callGlobal();
+
+
+// setGlobalInAFunction();
+// callGlobalInFunction();
+
+/*
+Problems with global references:
+    * Can be easily overwritten
+    * Takes Javascript runtime longer to find when using them
+
+var:
+    * scoped to the function it is defined in
+*/
+
+/*
+Hoisting: Declared variables will be available anywhere inside of the function they were declared in.
+*/
+
+function hoist() {
+    // if(true) {
+    //     var h = 'hoisted variable name';
+    // }
+    // if (false) {
+    //     h2 = 'hoisted!';
+    // }
+
+    // console.log(h2)
+
+    //Better way of doing the same thing:
+    var h,
+        h2;
     if(true) {
-        var say = "hoisted var";
+        h = 'hoisted variable name'; 
     }
     if(false) {
-        // var sayMore = "if false define var";
-        sayMore = "if false define var";
-        
+        h2 = 'hoisted!';
     }
-    //we can access var sar outside of the if statement
-    // console.log(say);
-    // console.log("sayMore: " + sayMore);
-    /*
-    * prints sayMore as undefined:
-        * same thing is declaring it outside the if block
-        * undefined: doesnt point to anything
-    */
+
+    console.log("h = " + h);
+    console.log("h2 = " + h2);
+
 }
-// saySomething();
-
-///////
-//Closure
-function getNames() {
-    var name;
-
-    function printName() {
-        if(true) {
-            name = "Jonathan";//Scope does NOT change
-        }
-
-        // console.log(name);
-    }//
-    printName();
-    // console.log(name);
-}
-getNames();
 
 /*
-    * getNames: outter scoped function
-    * printName private function inside getNames
-    * Closure: Nested function has access to variables declared in another scope
-        * in this case, printName has access to outer scope defined var name.
-        * "printName has a closure around name"
+
 */
 
-/////////////
-//Immediate Functions
-(function() {
-    var name;
+// hoist();
 
-    function printName() {
-        if(true) {
-            name = "Jonathan";//Scope does NOT change
-        }
 
-        // console.log(name);
-    }//
-    printName();
-    // console.log(name);
-})();
-//Immediately called when defined, not returned
+/*
+undefined != 'not' defined
+    undefined --> exists but has no reference
+*/
 
-//-------------------------------------
-//creating var in a new scope and returning it
-var outer = (function(){
+/*
+
+A function defined without a function around it will be defined 
+in the global scope of the js runtime.
+
+We can scope other functions inside functions.
+
+If you have a function with a function inside it then the variables 
+declared in the outer function can be accesed from within the child 
+function; 'closure'.
+
+
+*/
+
+function outerScope() {
     var f;
-    var anObjectLiteral;
-    function defWord() {
+
+    function getf() {
         if(true) {
-            f = "defWord()!";
-
-            anObjectLiteral = {
-                "key": "value",
-                aFunc: function() {
-                    return "aFunc!";
-                }
-            };
+            f = 'closured var!';
         }
+
+        console.log(f);
     }
 
-    defWord();
-
-    return anObjectLiteral;
-
-})();
-// console.log(outer.key);
-// console.log(outer.aFunc());
-
-//////
-/*
-Using globally defined objects inside a module
-*/
-var _g = "global";
-var myModule = (function(_g){
-    // console.log(_g)//undefined
-})();
-
-///export a global variable
-var myModule = (function(_g, global){
-    console.log(_g)//global
-    global.word = "word!";
-})(_g, this);
-
-// console.log(this.word);
-
-//Limitations:
-var _g = "global";
-var myMod = (function(_g, global){
-    var myObj = {};
-
-    var priv_var = "a private var";
-
-    myObj.f = "f";
-    myObj.aFunc = function() {
-        return priv_var + "was returned from myMods functions";
-    };
-
-    return myObj;
-})(_g, this);
-
-console.log(myMod.aFunc());
-// new myMod(); //Error
-///
-
-MyObj = function() {
-    this.key = "val";
-    this.doSomething = function() {
-        console.log("DOING!");
-    }
+    getf();
+    console.log(f);
 }
 
-var obj = new MyObj(); //MyObj instance
+// outerScope();
 
-// console.log(obj.key);
-// console.log(obj.doSomething());
+/*
+Immediate Functions / Javascript Modules
+*/
 
-////
+//Local Access to global data
+/*
 
-var MyObject = (function(){
+
+var myModule = (function($,globalScope){
+    console.log($);
+    globalScope.something = 'something in the global scope';
+})(jQuery, this);
 
 
-    var myObj = function() {
-        var this.key = "valey";
-        var this.val = 0;
-        this.dosomething = function() {
-            this.val++;
-            return this.val;
-        }
+*/
+
+MyObject = (
+    function() {
+        var privateCount = 0;
+
+        var Obj = function() {
+            this.inc = function() {
+                privateCount += 1;
+                return privateCount;
+            }
+        };
+    return Obj;
     }
+    )();
 
-    return myObj;
-})();
+var counter1 = new MyObject();
+var counter2 = new MyObject();
 
-var obj_1 = new MyObject();
-var obj_2 = new MyObject();
+console.log(counter1.inc());
+console.log(counter1.inc());
+console.log(counter1.inc());
+console.log(counter2.inc());
 
-console.log(obj_1.dosomething());
-console.log(obj_1.dosomething());
-console.log(obj_1.dosomething());
 
-console.log(obj_2.dosomething());
-console.log(obj_2.dosomething());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
